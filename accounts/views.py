@@ -5,6 +5,8 @@ from django.shortcuts import render, redirect
 from .forms import CustomUserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django import forms
+from allauth.socialaccount.models import SocialApp
+from allauth.socialaccount.views import ConnectionsView
 
 def register_view(request):
     if request.method == 'POST':
@@ -41,3 +43,11 @@ class CustomLoginView(LoginView):
             )
             return redirect('accounts:login')
         return super().form_valid(form)
+
+class CustomConnectionsView(ConnectionsView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['registered_providers'] = list(
+            SocialApp.objects.values_list('provider', flat=True)
+        )
+        return context

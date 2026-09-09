@@ -33,8 +33,12 @@
 
         <h4 class="mt-4">Add a Third-Party Account</h4>
         <div class="d-grid gap-2 col-md-6">
-            <a href="{% provider_login_url 'google' process='connect' %}" class="btn btn-outline-danger">Connect Google</a>
-            <a href="{% provider_login_url 'facebook' process='connect' %}" class="btn btn-outline-primary">Connect Facebook</a>
+            {% if 'google' in registered_providers %}
+               <a href="{% provider_login_url 'google' process='connect' %}" class="btn btn-outline-danger">Connect Google</a>
+            {% endif %}
+            {% if 'facebook' in registered_providers %}
+               <a href="{% provider_login_url 'facebook' process='connect' %}" class="btn btn-outline-primary">Connect Facebook</a>
+            {% endif %}
         </div>
     </div>
 </div>

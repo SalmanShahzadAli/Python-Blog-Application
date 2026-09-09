@@ -18,9 +18,10 @@ from django.contrib import admin
 from django.urls import path,include
 
 from blog.views import post_list_view
-
+from accounts.views import CustomConnectionsView
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('accounts/3rdparty/', CustomConnectionsView.as_view(), name='socialaccount_connections'),
     path('accounts/', include('accounts.urls')),
     path('accounts/', include('allauth.urls')),
     path('', post_list_view, name='home'),
