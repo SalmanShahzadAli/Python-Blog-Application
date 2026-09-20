@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<a href="{% url 'store:product_list' %}" class="btn btn-link ps-0">&larr; Back to products</a>
+
+<div class="row">
+    <div class="col-md-5">
+        {% if product.image %}
+        <img src="{{ product.image.url }}" class="img-fluid rounded">
+        {% endif %}
+    </div>
+    <div class="col-md-7">
+        <h1>{{ product.name }}</h1>
+        <h3 class="text-primary">${{ product.price }}</h3>
+        <p>{{ product.description }}</p>
+        <p class="text-muted">
+            {% if product.is_in_stock %}
+            In stock ({{ product.stock }} available)
+            {% else %}
+            Out of stock
+            {% endif %}
+        </p>
+
+        {% if user == product.owner %}
+        <a href="{% url 'store:product_edit' product.pk %}" class="btn btn-outline-secondary">Edit</a>
+        <a href="{% url 'store:product_delete' product.pk %}" class="btn btn-outline-danger">Delete</a>
+        {% elif user.is_authenticated and product.is_in_stock %}
+        <form method="post" action="{% url 'store:add_to_cart' product.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Add to Cart</button>
+        </form>
+        {% elif not product.is_in_stock %}
+        <button class="btn btn-secondary" disabled>Out of Stock</button>
+        {% else %}
+        <p><a href="{% url 'accounts:login' %}">Log in</a> to purchase this product.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

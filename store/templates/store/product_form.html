@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}{{ action }} Product{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{{ action }} Product</h1>
+
+<form method="post" enctype="multipart/form-data" class="col-md-8">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label class="form-label">Name</label>
+        {{ form.name }}
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Description</label>
+        {{ form.description }}
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Price</label>
+        {{ form.price }}
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Stock</label>
+        {{ form.stock }}
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Image</label>
+        {{ form.image }}
+    </div>
+    <button type="submit" class="btn btn-primary">{{ action }} Product</button>
+</form>
+{% endblock %}

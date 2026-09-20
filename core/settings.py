@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'accounts',
     'blog',
     'comments',
+    'store',
     # allauth
     'allauth',
     'allauth.account',
@@ -159,3 +160,9 @@ LOGOUT_REDIRECT_URL = 'accounts:login'
 
 _csrf_origins = config('CSRF_TRUSTED_ORIGINS', default='')
 CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in _csrf_origins.split(',') if origin.strip()]
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+STRIPE_PUBLIC_KEY = config('STRIPE_PUBLIC_KEY')
+STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY')

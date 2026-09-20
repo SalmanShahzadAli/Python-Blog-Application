@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Order #{{ order.id }}{% endblock %}
+
+{% block content %}
+<h1>Order #{{ order.id }}</h1>
+<p>Status: <span class="badge bg-{% if order.status == 'paid' %}success{% else %}secondary{% endif %}">{{ order.get_status_display }}</span></p>
+<p>Placed on {{ order.created_at|date:"M d, Y H:i" }}</p>
+
+<table class="table">
+    <thead>
+        <tr><th>Product</th><th>Price</th><th>Qty</th><th>Subtotal</th></tr>
+    </thead>
+    <tbody>
+        {% for item in order.items.all %}
+            <tr>
+                <td>{{ item.product_name }}</td>
+                <td>${{ item.price }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>${{ item.subtotal }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h4 class="text-end">Total: ${{ order.total_price }}</h4>
+{% endblock %}

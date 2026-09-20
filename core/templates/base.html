@@ -14,6 +14,11 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
         <div class="container">
             <a class="navbar-brand" href="{% url 'blog:post_list' %}">WFH Blog</a>
+            <a class="nav-link text-white d-inline me-3" href="{% url 'store:product_list' %}">Store</a>
+            {% if user.is_authenticated %}
+            <a class="nav-link text-white d-inline me-3" href="{% url 'store:cart' %}">Cart</a>
+            <a class="nav-link text-white d-inline me-3" href="{% url 'store:order_list' %}">My Orders</a>
+            {% endif %}
             <div class="d-flex">
                 {% if user.is_authenticated %}
                 <a href="{% url 'blog:create_post' %}" class="btn btn-outline-light btn-sm me-2">New Post</a>
