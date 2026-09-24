@@ -69,7 +69,17 @@ class Order(models.Model):
     )
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
-    stripe_checkout_session_id = models.CharField(max_length=255, blank=True)
+
+    # Shipping / contact details
+    full_name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=20)
+    email = models.EmailField()
+    address = models.CharField(max_length=255)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
+
+    stripe_payment_intent_id = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -77,7 +87,6 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Order #{self.id} - {self.user} - {self.status}"
-
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')

@@ -12,6 +12,10 @@ import stripe
 from django.conf import settings
 from django.urls import reverse
 from .models import Order, OrderItem
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .forms import ProductForm, CheckoutForm
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -123,13 +127,37 @@ def remove_from_cart_view(request, item_id):
 @login_required
 def checkout_view(request):
     cart, _ = Cart.objects.get_or_create(user=request.user)
-
     if not cart.items.exists():
         messages.error(request, "Your cart is empty.")
         return redirect('store:cart')
 
-    order = Order.objects.create(user=request.user, total_price=cart.total_price())
-    line_items = []
+    form = CheckoutForm(initial={'email': request.user.email})
+    return render(request, 'store/checkout.html', {
+        'form': form,
+        'cart': cart,
+        'stripe_public_key': settings.STRIPE_PUBLIC_KEY,
+    })
+
+
+@login_required
+def create_payment_intent_view(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+    cart, _ = Cart.objects.get_or_create(user=request.user)
+    if not cart.items.exists():
+        return JsonResponse({'error': 'Your cart is empty.'}, status=400)
+
+    data = json.loads(request.body)
+    form = CheckoutForm(data)
+
+    if not form.is_valid():
+        return JsonResponse({'error': 'Please fill in all fields correctly.', 'form_errors': form.errors}, status=400)
+
+    order = form.save(commit=False)
+    order.user = request.user
+    order.total_price = cart.total_price()
+    order.save()
 
     for item in cart.items.all():
         OrderItem.objects.create(
@@ -139,46 +167,35 @@ def checkout_view(request):
             price=item.product.price,
             quantity=item.quantity
         )
-        line_items.append({
-            'price_data': {
-                'currency': 'usd',
-                'product_data': {'name': item.product.name},
-                'unit_amount': int(item.product.price * 100),
-            },
-            'quantity': item.quantity,
-        })
 
-    checkout_session = stripe.checkout.Session.create(
-        payment_method_types=['card'],
-        line_items=line_items,
-        mode='payment',
-        success_url=request.build_absolute_uri(reverse('store:checkout_success')) + f'?order_id={order.id}&session_id={{CHECKOUT_SESSION_ID}}',
-        cancel_url=request.build_absolute_uri(reverse('store:cart')),
+    intent = stripe.PaymentIntent.create(
+        amount=int(order.total_price * 100),
+        currency='usd',
+        metadata={'order_id': order.id},
     )
-
-    order.stripe_checkout_session_id = checkout_session.id
+    order.stripe_payment_intent_id = intent.id
     order.save()
 
     cart.items.all().delete()
 
-    return redirect(checkout_session.url, code=303)
+    return JsonResponse({'client_secret': intent.client_secret, 'order_id': order.id})
 
-def checkout_success_view(request):
-    session_id = request.GET.get('session_id')
+
+@login_required
+def checkout_complete_view(request):
     order_id = request.GET.get('order_id')
     order = get_object_or_404(Order, id=order_id, user=request.user)
 
-    session = stripe.checkout.Session.retrieve(session_id)
+    intent = stripe.PaymentIntent.retrieve(order.stripe_payment_intent_id)
 
-    if session.payment_status == 'paid':
+    if intent.status == 'succeeded':
         order.status = Order.Status.PAID
         order.save()
         messages.success(request, "Payment successful! Your order is confirmed.")
     else:
-        messages.warning(request, "Payment not completed.")
+        messages.warning(request, "Payment was not completed.")
 
     return redirect('store:order_detail', pk=order.id)
-
 @login_required
 def order_list_view(request):
     orders = Order.objects.filter(user=request.user)

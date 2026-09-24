@@ -15,7 +15,9 @@ urlpatterns = [
     path('cart/update/<int:item_id>/', views.update_cart_item_view, name='update_cart_item'),
     path('cart/remove/<int:item_id>/', views.remove_from_cart_view, name='remove_from_cart'),
     path('checkout/', views.checkout_view, name='checkout'),
-path('checkout/success/', views.checkout_success_view, name='checkout_success'),
-path('orders/', views.order_list_view, name='order_list'),
-path('orders/<int:pk>/', views.order_detail_view, name='order_detail'),
+    path('orders/', views.order_list_view, name='order_list'),
+    path('orders/<int:pk>/', views.order_detail_view, name='order_detail'),
+    path('checkout/', views.checkout_view, name='checkout'),
+    path('checkout/create-intent/', views.create_payment_intent_view, name='create_payment_intent'),
+    path('checkout/complete/', views.checkout_complete_view, name='checkout_complete'),
 ]
